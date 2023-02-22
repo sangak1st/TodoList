@@ -10,8 +10,9 @@ export default class ToDoList extends Component {
         listTodos: [
             { id: 'todo1', title: 'Doing homework' },
             { id: 'todo2', title: 'Code' },
-            { id: 'todo2', title: 'Fix bug' }
-        ]
+            { id: 'todo3', title: 'Fix bug' }
+        ],
+        editTodo: {}
     }
 
     addNewTodo = (todo) => {
@@ -26,9 +27,48 @@ export default class ToDoList extends Component {
 
     }
 
-    render() {
-        let { listTodos } = this.state // let listTodos = this.state.listTodos
+    handleDelete = (todo) => {
+        let currentTodo = this.state.listTodos;
+        currentTodo = currentTodo.filter(item => item.id !== todo.id)
+        this.setState({
+            listTodos: currentTodo
+        })
+        toast.success("Delete success!")
+    }
 
+    handleEdit = (todo) => {
+        let { editTodo, listTodos } = this.state;
+
+        let isEmptyObj = Object.keys(editTodo).length === 0;
+        //save
+        if (!isEmptyObj && editTodo.id === todo.id) {
+            let listTodosCopy = [...listTodos];
+            let objIndex = listTodosCopy.findIndex((item) => item.id === todo.id)
+            listTodosCopy[objIndex].title = editTodo.title
+            this.setState({
+                listTodos: listTodosCopy,
+                editTodo: ''
+            });
+            toast.success('Save success')
+            return;
+        }
+
+        this.setState({
+            editTodo: todo
+        })
+    }
+
+    handleEditOnChange = (event) => {
+        let editTodoCopy = { ...this.state.editTodo }
+        editTodoCopy.title = event.target.value
+        this.setState({
+            editTodo: editTodoCopy
+        })
+    }
+
+    render() {
+        let { listTodos, editTodo } = this.state // let listTodos = this.state.listTodos
+        let isEmptyObj = Object.keys(editTodo).length === 0;
 
         return (
             <div className='todolist'>
@@ -41,9 +81,30 @@ export default class ToDoList extends Component {
                             listTodos.map((item, index) => {
                                 return (
                                     <div className='todo-child' key={item.id}>
-                                        <span>{index + 1} - {item.title}</span>
-                                        <button className='button'>Edit</button>
-                                        <button className='button'>Delete</button>
+                                        {
+                                            !isEmptyObj && editTodo.id === item.id ?
+                                                <span>
+                                                    {index + 1} -
+                                                    <input
+                                                        type="text"
+                                                        value={editTodo.title}
+                                                        onChange={(event) => this.handleEditOnChange(event)}
+                                                    />
+                                                </span>
+                                                :
+                                                <span>{index + 1} - {item.title}</span>
+                                        }
+                                        <button
+                                            className='button'
+                                            onClick={() => this.handleEdit(item)}
+                                        >
+                                            {!isEmptyObj && editTodo.id === item.id ? 'Save' : 'Edit'
+                                            }
+                                        </button>
+                                        <button
+                                            className='button'
+                                            onClick={() => this.handleDelete(item)}
+                                        >Delete</button>
                                     </div>
                                 )
                             })
